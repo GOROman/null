@@ -388,37 +388,79 @@
       }
 
       function enableDrag() {
+        setTransition('none');
+
+        var STIFFNESS = 220;
+        var DAMPING = 16;
+        var pos = { x: 0, y: 0 };
+        var vel = { x: 0, y: 0 };
+        var target = { x: 0, y: 0 };
         var dragging = false;
         var pointerId = null;
-        var startX, startY, dx = 0, dy = 0;
-        var max = 90;
+        var grabOffset = { x: 0, y: 0 };
+        var raf = null;
+        var lastTime = null;
+
+        function step(ts) {
+          if (lastTime === null) lastTime = ts;
+          var dt = Math.min((ts - lastTime) / 1000, 0.032);
+          lastTime = ts;
+
+          var ax = -STIFFNESS * (pos.x - target.x) - DAMPING * vel.x;
+          var ay = -STIFFNESS * (pos.y - target.y) - DAMPING * vel.y;
+          vel.x += ax * dt;
+          vel.y += ay * dt;
+          pos.x += vel.x * dt;
+          pos.y += vel.y * dt;
+
+          var rot = Math.max(Math.min(pos.x / 18, 10), -10);
+          card.style.transform = 'translate3d(' + pos.x.toFixed(2) + 'px,' + pos.y.toFixed(2) + 'px,0) rotate(' + rot.toFixed(2) + 'deg)';
+
+          var atRest = !dragging &&
+            Math.abs(pos.x - target.x) < 0.05 && Math.abs(pos.y - target.y) < 0.05 &&
+            Math.abs(vel.x) < 0.05 && Math.abs(vel.y) < 0.05;
+
+          if (atRest) {
+            pos.x = target.x; pos.y = target.y;
+            vel.x = 0; vel.y = 0;
+            card.style.transform = 'translate3d(0,0,0) rotate(0deg)';
+            raf = null;
+            lastTime = null;
+            return;
+          }
+          raf = requestAnimationFrame(step);
+        }
+
+        function ensureLoop() {
+          if (raf === null) {
+            lastTime = null;
+            raf = requestAnimationFrame(step);
+          }
+        }
 
         card.addEventListener('pointerdown', function (e) {
-          if (!settled) return;
           dragging = true;
           pointerId = e.pointerId;
           card.setPointerCapture(pointerId);
           card.classList.add('dragging');
-          setTransition('none');
-          startX = e.clientX - dx;
-          startY = e.clientY - dy;
+          grabOffset.x = e.clientX - pos.x;
+          grabOffset.y = e.clientY - pos.y;
+          ensureLoop();
         });
 
         card.addEventListener('pointermove', function (e) {
           if (!dragging || e.pointerId !== pointerId) return;
-          dx = Math.max(Math.min(e.clientX - startX, max), -max);
-          dy = Math.max(Math.min(e.clientY - startY, max), -max);
-          card.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) rotate(' + (dx / 14) + 'deg)';
+          target.x = e.clientX - grabOffset.x;
+          target.y = e.clientY - grabOffset.y;
         });
 
         function endDrag(e) {
           if (!dragging || e.pointerId !== pointerId) return;
           dragging = false;
           card.classList.remove('dragging');
-          dx = 0;
-          dy = 0;
-          setTransition('transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)');
-          card.style.transform = REST;
+          target.x = 0;
+          target.y = 0;
+          ensureLoop();
         }
 
         card.addEventListener('pointerup', endDrag);
