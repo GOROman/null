@@ -148,6 +148,13 @@
     align-items: center;
     gap: clamp(4px, 0.8vw, 8px);
     flex-shrink: 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .qr-block:hover {
+    opacity: 0.7;
   }
 
   .qr-block img {
@@ -360,10 +367,10 @@
         </div>
       </div>
 
-      <div class="qr-block">
+      <a class="qr-block" href="https://goroman.github.io/null/">
         <img src="assets/qr.png?v=2" alt="QR code linking to this page">
         <span class="qr-url">goroman.github.io/null/</span>
-      </div>
+      </a>
     </div>
 
     <div class="footer-row">
