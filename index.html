@@ -195,11 +195,17 @@
     display: block;
   }
 
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2vw, 18px);
+    z-index: 1;
+  }
+
   .footer-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 1;
     border-top: 1px solid var(--line);
     padding-top: 12px;
   }
@@ -307,6 +313,9 @@
     <div class="names">
       <p class="name-en">Yoshihito Kondoh</p>
       <p class="name-ja">近藤 義仁</p>
+    </div>
+
+    <div class="bottom">
       <div class="links">
         <button type="button" class="handle" data-url="https://x.com/GOROman" data-qr="assets/qr-x.png" data-label="@GOROman">
           <svg class="icon-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -321,11 +330,11 @@
           Facebook
         </button>
       </div>
-    </div>
 
-    <div class="footer-row">
-      <span class="tag">無職</span>
-      <span class="tag">null / GOROman</span>
+      <div class="footer-row">
+        <span class="tag">無職</span>
+        <span class="tag">null / GOROman</span>
+      </div>
     </div>
   </div>
 
