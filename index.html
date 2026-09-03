@@ -29,6 +29,8 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
+    overflow: hidden;
+    perspective: 1400px;
   }
 
   .card {
@@ -47,6 +49,48 @@
       0 1px 2px rgba(0, 0, 0, 0.04),
       0 12px 30px -14px rgba(0, 0, 0, 0.18),
       0 30px 60px -30px rgba(0, 0, 0, 0.15);
+    animation: fly-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes fly-in {
+    0% {
+      opacity: 0;
+      transform: translate3d(-140vw, -60px, 0) rotate(-26deg) rotateY(35deg);
+    }
+    60% {
+      opacity: 1;
+    }
+    80% {
+      transform: translate3d(12px, 0, 0) rotate(2deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) rotate(0deg) rotateY(0deg);
+    }
+  }
+
+  @media (max-width: 640px) {
+    body {
+      padding: 0;
+      align-items: stretch;
+    }
+    .card {
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      aspect-ratio: auto;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      padding: 28px 26px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card {
+      animation: none;
+    }
   }
 
   /* subtle paper fiber texture */
@@ -165,10 +209,6 @@
     color: var(--sub);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-  }
-
-  @media (max-width: 400px) {
-    body { padding: 12px; }
   }
 
   .overlay {
