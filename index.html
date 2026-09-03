@@ -49,43 +49,15 @@
       0 1px 2px rgba(0, 0, 0, 0.04),
       0 12px 30px -14px rgba(0, 0, 0, 0.18),
       0 30px 60px -30px rgba(0, 0, 0, 0.15);
-    animation: fly-in 5.8s both;
+    opacity: 0;
+    transform: translate3d(-160vw, -90px, 0) rotate(-38deg) rotateY(45deg);
+    cursor: grab;
+    touch-action: none;
+    will-change: transform;
   }
 
-  @keyframes fly-in {
-    0% {
-      opacity: 0;
-      transform: translate3d(-160vw, -90px, 0) rotate(-38deg) rotateY(45deg);
-      animation-timing-function: ease-out;
-    }
-    38% {
-      opacity: 1;
-      transform: translate3d(-46vw, -18px, 0) rotate(-14deg) rotateY(16deg);
-      animation-timing-function: linear;
-    }
-    72% {
-      opacity: 1;
-      transform: translate3d(-46vw, -18px, 0) rotate(-14deg) rotateY(16deg);
-      animation-timing-function: ease-in;
-    }
-    78% {
-      opacity: 0.5;
-      transform: translate3d(-165vw, -90px, 0) rotate(-38deg) rotateY(45deg);
-      animation-timing-function: ease-out;
-    }
-    80% {
-      opacity: 0;
-      transform: translate3d(-165vw, -90px, 0) rotate(-38deg) rotateY(45deg);
-    }
-    97% {
-      opacity: 1;
-      transform: translate3d(12px, 0, 0) rotate(2deg);
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    100% {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) rotate(0deg) rotateY(0deg);
-    }
+  .card.dragging {
+    cursor: grabbing;
   }
 
   @media (max-width: 640px) {
@@ -103,12 +75,6 @@
       border: none;
       box-shadow: none;
       padding: 28px 26px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card {
-      animation: none;
     }
   }
 
@@ -368,6 +334,119 @@
   </div>
 
   <script>
+    (function () {
+      var card = document.querySelector('.card');
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var HIDDEN = 'translate3d(-160vw, -90px, 0) rotate(-38deg) rotateY(45deg)';
+      var PEEK   = 'translate3d(-46vw, -18px, 0) rotate(-14deg) rotateY(16deg)';
+      var REST   = 'translate3d(0, 0, 0) rotate(0deg) rotateY(0deg)';
+
+      var peeking = false;
+      var settled = false;
+      var holdTimer = null;
+
+      function setTransition(t) {
+        card.style.transition = t;
+      }
+
+      function onPointerNear(e) {
+        if (!peeking) return;
+        var x = e.clientX, y = e.clientY;
+        if (x === undefined && e.touches && e.touches[0]) {
+          x = e.touches[0].clientX;
+          y = e.touches[0].clientY;
+        }
+        if (x === undefined) return;
+        var r = card.getBoundingClientRect();
+        var margin = 120;
+        if (x > r.left - margin && x < r.right + margin && y > r.top - margin && y < r.bottom + margin) {
+          retreatAndFlyIn();
+        }
+      }
+
+      function retreatAndFlyIn() {
+        if (!peeking) return;
+        peeking = false;
+        clearTimeout(holdTimer);
+        window.removeEventListener('pointermove', onPointerNear);
+        window.removeEventListener('touchstart', onPointerNear);
+
+        setTransition('transform 0.28s ease-in, opacity 0.28s ease-in');
+        card.style.opacity = '0.4';
+        card.style.transform = HIDDEN;
+
+        setTimeout(function () {
+          setTransition('transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-out');
+          card.style.opacity = '1';
+          card.style.transform = REST;
+          setTimeout(function () {
+            settled = true;
+            enableDrag();
+          }, 950);
+        }, 300);
+      }
+
+      function enableDrag() {
+        var dragging = false;
+        var pointerId = null;
+        var startX, startY, dx = 0, dy = 0;
+        var max = 90;
+
+        card.addEventListener('pointerdown', function (e) {
+          if (!settled) return;
+          dragging = true;
+          pointerId = e.pointerId;
+          card.setPointerCapture(pointerId);
+          card.classList.add('dragging');
+          setTransition('none');
+          startX = e.clientX - dx;
+          startY = e.clientY - dy;
+        });
+
+        card.addEventListener('pointermove', function (e) {
+          if (!dragging || e.pointerId !== pointerId) return;
+          dx = Math.max(Math.min(e.clientX - startX, max), -max);
+          dy = Math.max(Math.min(e.clientY - startY, max), -max);
+          card.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) rotate(' + (dx / 14) + 'deg)';
+        });
+
+        function endDrag(e) {
+          if (!dragging || e.pointerId !== pointerId) return;
+          dragging = false;
+          card.classList.remove('dragging');
+          dx = 0;
+          dy = 0;
+          setTransition('transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)');
+          card.style.transform = REST;
+        }
+
+        card.addEventListener('pointerup', endDrag);
+        card.addEventListener('pointercancel', endDrag);
+      }
+
+      if (reduceMotion) {
+        card.style.transition = 'none';
+        card.style.opacity = '1';
+        card.style.transform = REST;
+        settled = true;
+        enableDrag();
+        return;
+      }
+
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          setTransition('transform 1.8s ease-out, opacity 0.6s ease-out');
+          card.style.opacity = '1';
+          card.style.transform = PEEK;
+          peeking = true;
+          window.addEventListener('pointermove', onPointerNear);
+          window.addEventListener('touchstart', onPointerNear, { passive: true });
+          holdTimer = setTimeout(retreatAndFlyIn, 1800 + 2000);
+        });
+      });
+    })();
+
     var overlay = document.getElementById('overlay');
     var modalQr = document.getElementById('modalQr');
     var modalLink = document.getElementById('modalLink');
