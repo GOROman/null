@@ -266,7 +266,7 @@
     padding: 20px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.2s ease;
     z-index: 10;
   }
 
@@ -288,12 +288,17 @@
     align-items: center;
     gap: 14px;
     box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
-    transform: translateY(6px);
-    transition: transform 0.15s ease;
+    transform: scale(0.4);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .overlay.open .modal {
-    transform: translateY(0);
+    transform: scale(1);
+  }
+
+  .overlay.closing .modal {
+    transform: scale(0.4);
+    transition: transform 0.2s ease-in;
   }
 
   .modal-label {
@@ -558,12 +563,18 @@
         modalQr.src = btn.getAttribute('data-qr');
         modalLink.href = url;
         modalLink.textContent = url.replace(/^https?:\/\//, '');
+        overlay.classList.remove('closing');
         overlay.classList.add('open');
       });
     });
 
     function closeModal() {
+      if (!overlay.classList.contains('open')) return;
+      overlay.classList.add('closing');
       overlay.classList.remove('open');
+      setTimeout(function () {
+        overlay.classList.remove('closing');
+      }, 220);
     }
     closeBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', function (e) {
