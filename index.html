@@ -107,6 +107,7 @@
     gap: 7px;
     font-size: clamp(12px, 1.2vw, 16px);
     font-weight: 600;
+    font-family: inherit;
     color: var(--ink);
     text-decoration: none;
     padding: clamp(6px, 0.8vw, 9px) clamp(12px, 1.4vw, 18px);
@@ -114,6 +115,7 @@
     background: transparent;
     border: 1px solid var(--line);
     width: fit-content;
+    cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
 
@@ -162,6 +164,92 @@
   @media (max-width: 400px) {
     body { padding: 12px; }
   }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 10;
+  }
+
+  .overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 32px 28px 26px;
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
+    transform: translateY(6px);
+    transition: transform 0.15s ease;
+  }
+
+  .overlay.open .modal {
+    transform: translateY(0);
+  }
+
+  .modal-label {
+    margin: 0;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .modal-qr {
+    width: 160px;
+    height: 160px;
+    display: block;
+  }
+
+  .modal-link {
+    font-size: 13px;
+    color: var(--sub);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+    word-break: break-all;
+    text-align: center;
+  }
+
+  .modal-link:hover {
+    color: var(--ink);
+    border-color: #b8b6b0;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--sub);
+    cursor: pointer;
+  }
+
+  .close-btn:hover {
+    color: var(--ink);
+  }
 </style>
 </head>
 <body>
@@ -179,18 +267,18 @@
       <p class="name-en">Yoshihito Kondoh</p>
       <p class="name-ja">近藤 義仁</p>
       <div class="links">
-        <a class="handle" href="https://x.com/GOROman" target="_blank" rel="noopener noreferrer">
+        <button type="button" class="handle" data-url="https://x.com/GOROman" data-qr="assets/qr-x.png" data-label="@GOROman">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           @GOROman
-        </a>
-        <a class="handle" href="https://www.linkedin.com/in/goroman" target="_blank" rel="noopener noreferrer">
+        </button>
+        <button type="button" class="handle" data-url="https://www.linkedin.com/in/goroman" data-qr="assets/qr-linkedin.png" data-label="LinkedIn">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.446-2.136 2.94v5.666H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM7.114 20.452H3.56V9h3.554v11.452z"/></svg>
           LinkedIn
-        </a>
-        <a class="handle" href="https://www.facebook.com/yoshihito.kondoh" target="_blank" rel="noopener noreferrer">
+        </button>
+        <button type="button" class="handle" data-url="https://www.facebook.com/yoshihito.kondoh" data-qr="assets/qr-facebook.png" data-label="Facebook">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.061C22 6.505 17.523 2 12 2S2 6.505 2 12.061c0 5.022 3.657 9.184 8.438 9.939v-7.03H7.898v-2.909h2.54V9.845c0-2.522 1.492-3.915 3.777-3.915 1.094 0 2.238.197 2.238.197v2.476h-1.26c-1.243 0-1.63.775-1.63 1.57v1.888h2.773l-.443 2.909h-2.33v7.03C18.343 21.245 22 17.083 22 12.061z"/></svg>
           Facebook
-        </a>
+        </button>
       </div>
     </div>
 
@@ -199,5 +287,44 @@
       <span class="tag">null / GOROman</span>
     </div>
   </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalLabel">
+      <button type="button" class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
+      <p class="modal-label" id="modalLabel">LinkedIn</p>
+      <img class="modal-qr" id="modalQr" src="" alt="QR code">
+      <a class="modal-link" id="modalLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+  </div>
+
+  <script>
+    var overlay = document.getElementById('overlay');
+    var modalQr = document.getElementById('modalQr');
+    var modalLink = document.getElementById('modalLink');
+    var modalLabel = document.getElementById('modalLabel');
+    var closeBtn = document.getElementById('closeBtn');
+
+    document.querySelectorAll('.handle[data-url]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var url = btn.getAttribute('data-url');
+        modalLabel.textContent = btn.getAttribute('data-label');
+        modalQr.src = btn.getAttribute('data-qr');
+        modalLink.href = url;
+        modalLink.textContent = url.replace(/^https?:\/\//, '');
+        overlay.classList.add('open');
+      });
+    });
+
+    function closeModal() {
+      overlay.classList.remove('open');
+    }
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
 </body>
 </html>
