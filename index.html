@@ -128,6 +128,21 @@
     fill: currentColor;
   }
 
+  .qr {
+    position: absolute;
+    top: clamp(20px, 3.2vw, 34px);
+    right: clamp(20px, 3.6vw, 40px);
+    width: clamp(48px, 6.5vw, 84px);
+    height: clamp(48px, 6.5vw, 84px);
+    z-index: 1;
+  }
+
+  .qr img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
   .footer-row {
     display: flex;
     align-items: center;
@@ -154,6 +169,10 @@
     <div>
       <div class="mark">Profile</div>
       <div class="rule"></div>
+    </div>
+
+    <div class="qr">
+      <img src="assets/qr.png" alt="QR code linking to this page">
     </div>
 
     <div class="names">
