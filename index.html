@@ -100,16 +100,16 @@
     /* vw ベースの clamp() はスマホ (特に回転時) で小さくなりすぎるので固定値にする */
     .content { gap: 24px; }
     .info { gap: 10px; }
-    .name-en { font-size: 34px; }
-    .name-ja { font-size: 15px; margin-bottom: 18px; }
+    .name-en { font-size: 40px; }
+    .name-ja { font-size: 17px; margin-bottom: 18px; }
     .links { gap: 14px; }
-    .handle { font-size: 19px; gap: 10px; }
-    .handle svg { width: 26px; height: 26px; border-radius: 7px; }
+    .handle { font-size: 21px; gap: 12px; }
+    .handle svg { width: 28px; height: 28px; border-radius: 7px; }
     .icon-x, .icon-linkedin { padding: 4px; }
     .qr-block { gap: 8px; }
-    .qr-block img { width: 170px; height: 170px; }
-    .qr-url { font-size: 13px; }
-    .tag { font-size: 13px; }
+    .qr-block img { width: 200px; height: 200px; }
+    .qr-url { font-size: 14px; }
+    .tag { font-size: 14px; }
     .card {
       max-width: none;
       width: 100%;
@@ -697,6 +697,28 @@
           holdTimer = setTimeout(retreatAndFlyIn, 1800 + 2000);
         });
       });
+    })();
+
+    // アクセス記録: worker/ の Cloudflare Worker に時刻・referrer などを送る (IP とジオIP は Worker 側で付く)。
+    // 空文字のままなら何も送らない。
+    var ACCESS_LOG_ENDPOINT = '';
+    (function () {
+      if (!ACCESS_LOG_ENDPOINT) return;
+      try {
+        var params = new URLSearchParams(location.search);
+        var payload = JSON.stringify({
+          t: new Date().toISOString(),
+          ref: document.referrer || '',
+          lang: navigator.language || '',
+          screen: screen.width + 'x' + screen.height,
+          src: params.get('s') || ''
+        });
+        // text/plain にすると CORS の preflight が要らない
+        var blob = new Blob([payload], { type: 'text/plain' });
+        if (!(navigator.sendBeacon && navigator.sendBeacon(ACCESS_LOG_ENDPOINT, blob))) {
+          fetch(ACCESS_LOG_ENDPOINT, { method: 'POST', body: blob, keepalive: true, mode: 'cors' }).catch(function () {});
+        }
+      } catch (e) {}
     })();
 
     var overlay = document.getElementById('overlay');
