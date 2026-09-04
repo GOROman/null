@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yoshihito Kondoh</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -328,6 +331,12 @@
     width: min(280px, 60vw);
     height: min(280px, 60vw);
     display: block;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .modal-qr:hover {
+    opacity: 0.7;
   }
 
   .modal-link {
@@ -488,7 +497,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalLabel">
       <button type="button" class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
       <p class="modal-label" id="modalLabel">LinkedIn</p>
-      <img class="modal-qr" id="modalQr" src="" alt="QR code">
+      <a id="modalQrLink" href="#" target="_blank" rel="noopener noreferrer"><img class="modal-qr" id="modalQr" src="" alt="QR code"></a>
       <a class="modal-link" id="modalLink" href="#" target="_blank" rel="noopener noreferrer"></a>
     </div>
   </div>
@@ -662,6 +671,7 @@
     var overlay = document.getElementById('overlay');
     var modalQr = document.getElementById('modalQr');
     var modalLink = document.getElementById('modalLink');
+    var modalQrLink = document.getElementById('modalQrLink');
     var modalLabel = document.getElementById('modalLabel');
     var closeBtn = document.getElementById('closeBtn');
 
@@ -671,6 +681,7 @@
         modalLabel.textContent = btn.getAttribute('data-label');
         modalQr.src = btn.getAttribute('data-qr');
         modalLink.href = url;
+        modalQrLink.href = url;
         modalLink.textContent = url.replace(/^https?:\/\//, '');
         overlay.classList.remove('closing');
         overlay.classList.add('open');
