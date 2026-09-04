@@ -84,7 +84,15 @@
       width: 100vw;
       height: 100dvh;
       transform-origin: top left;
+      transform: rotate(0deg) translateY(0);
       transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* 縦持ち: body ごと 90 度回転して横長の名刺で画面いっぱい使う。
+       クラスは JS が orientation を見て付け替える (横持ちとの切替は transition で滑らかに回る) */
+    body.rotated {
+      width: 100dvh;
+      height: 100vw;
+      transform: rotate(90deg) translateY(-100%);
     }
     .card {
       max-width: none;
@@ -98,15 +106,6 @@
     }
   }
 
-  /* スマホ縦持ち: body ごと 90 度回転して横長の名刺で画面いっぱい使う
-     (横持ちとの切替は上の transition で滑らかに回る) */
-  @media (max-width: 640px) and (orientation: portrait) {
-    body {
-      width: 100dvh;
-      height: 100vw;
-      transform: rotate(90deg) translateY(-100%);
-    }
-  }
 
   /* subtle paper fiber texture */
   .card::before {
@@ -438,6 +437,17 @@
 </style>
 </head>
 <body>
+  <script>
+    // スマホ縦持ち判定: 最初の描画前に body.rotated を決め、回転時は付け替える
+    (function () {
+      var mq = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
+      function apply() { document.body.classList.toggle('rotated', mq.matches); }
+      if (mq.addEventListener) mq.addEventListener('change', apply); else mq.addListener(apply);
+      window.addEventListener('resize', apply);
+      window.addEventListener('orientationchange', apply);
+      apply();
+    })();
+  </script>
   <div class="card">
     <div class="content">
       <div class="info">
@@ -487,11 +497,10 @@
     (function () {
       var card = document.querySelector('.card');
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var rotatedMq = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
 
       // 縦持ち回転時は body が 90 度回っているので、ポインタ座標を body 座標系に変換する
       function toLocal(x, y) {
-        if (rotatedMq.matches) return { x: y, y: window.innerWidth - x };
+        if (document.body.classList.contains('rotated')) return { x: y, y: window.innerWidth - x };
         return { x: x, y: y };
       }
       window.__cardToLocal = toLocal;
