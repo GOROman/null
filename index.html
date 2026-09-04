@@ -97,6 +97,19 @@
       height: 100vw;
       transform: rotate(90deg) translateY(-100%);
     }
+    /* vw ベースの clamp() はスマホ (特に回転時) で小さくなりすぎるので固定値にする */
+    .content { gap: 24px; }
+    .info { gap: 10px; }
+    .name-en { font-size: 34px; }
+    .name-ja { font-size: 15px; margin-bottom: 18px; }
+    .links { gap: 14px; }
+    .handle { font-size: 19px; gap: 10px; }
+    .handle svg { width: 26px; height: 26px; border-radius: 7px; }
+    .icon-x, .icon-linkedin { padding: 4px; }
+    .qr-block { gap: 8px; }
+    .qr-block img { width: 170px; height: 170px; }
+    .qr-url { font-size: 13px; }
+    .tag { font-size: 13px; }
     .card {
       max-width: none;
       width: 100%;
@@ -652,6 +665,24 @@
         card.style.transform = REST;
         settled = true;
         enableDrag();
+        return;
+      }
+
+      // スマホでは覗き見演出を省き、その場でフェードイン
+      var isPhone = window.matchMedia('(max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse))').matches;
+      if (isPhone) {
+        setTransition('none');
+        card.style.transform = REST;
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            setTransition('opacity 0.6s ease-out');
+            card.style.opacity = '1';
+            setTimeout(function () {
+              settled = true;
+              enableDrag();
+            }, 650);
+          });
+        });
         return;
       }
 
