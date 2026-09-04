@@ -91,6 +91,23 @@
     }
   }
 
+  /* スマホ縦持ち: body ごと 90 度回転して横長の名刺で画面いっぱい使う */
+  @media (max-width: 640px) and (orientation: portrait) {
+    body {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100dvh;
+      height: 100vw;
+      transform: rotate(90deg) translateY(-100%);
+      transform-origin: top left;
+    }
+    .card {
+      width: 100dvh;
+      height: 100vw;
+    }
+  }
+
   /* subtle paper fiber texture */
   .card::before {
     content: "";
@@ -429,24 +446,24 @@
           <p class="name-ja">近藤 義仁</p>
         </div>
         <div class="links">
-          <button type="button" class="handle" data-idx="0">
+          <button type="button" class="handle" data-url="https://x.com/GOROman" data-qr="assets/qr-x.png" data-label="@GOROman">
             <svg class="icon-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            <span class="handle-label" data-idx-label="0"></span>
+            @GOROman
           </button>
-          <button type="button" class="handle" data-idx="1">
+          <button type="button" class="handle" data-url="https://www.linkedin.com/in/goroman" data-qr="assets/qr-linkedin.png" data-label="LinkedIn">
             <svg class="icon-linkedin" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.446-2.136 2.94v5.666H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM7.114 20.452H3.56V9h3.554v11.452z"/></svg>
-            <span class="handle-label" data-idx-label="1"></span>
+            goroman
           </button>
-          <button type="button" class="handle" data-idx="2">
+          <button type="button" class="handle" data-url="https://www.facebook.com/yoshihito.kondoh" data-qr="assets/qr-facebook.png" data-label="Facebook">
             <svg class="icon-facebook" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.061C22 6.505 17.523 2 12 2S2 6.505 2 12.061c0 5.022 3.657 9.184 8.438 9.939v-7.03H7.898v-2.909h2.54V9.845c0-2.522 1.492-3.915 3.777-3.915 1.094 0 2.238.197 2.238.197v2.476h-1.26c-1.243 0-1.63.775-1.63 1.57v1.888h2.773l-.443 2.909h-2.33v7.03C18.343 21.245 22 17.083 22 12.061z"/></svg>
-            <span class="handle-label" data-idx-label="2"></span>
+            yoshihito.kondoh
           </button>
         </div>
       </div>
 
-      <a class="qr-block" id="qrBlock" href="#">
-        <img id="qrImg" src="" alt="QR code linking to this page">
-        <span class="qr-url" id="qrUrlLabel"></span>
+      <a class="qr-block" href="https://goroman.github.io/null/">
+        <img src="assets/qr.png?v=2" alt="QR code linking to this page">
+        <span class="qr-url">goroman.github.io/null/</span>
       </a>
     </div>
 
@@ -466,11 +483,18 @@
     </div>
   </div>
 
-  <script src="assets/card.js"></script>
   <script>
     (function () {
       var card = document.querySelector('.card');
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var rotatedMq = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
+
+      // 縦持ち回転時は body が 90 度回っているので、ポインタ座標を body 座標系に変換する
+      function toLocal(x, y) {
+        if (rotatedMq.matches) return { x: y, y: window.innerWidth - x };
+        return { x: x, y: y };
+      }
+      window.__cardToLocal = toLocal;
 
       var HIDDEN = 'translate3d(-160vw, -90px, 0) rotate(-38deg) rotateY(45deg)';
       var PEEK   = 'translate3d(-46vw, -18px, 0) rotate(-14deg) rotateY(16deg)';
@@ -578,15 +602,17 @@
           pointerId = e.pointerId;
           card.setPointerCapture(pointerId);
           card.classList.add('dragging');
-          grabOffset.x = e.clientX - pos.x;
-          grabOffset.y = e.clientY - pos.y;
+          var p = toLocal(e.clientX, e.clientY);
+          grabOffset.x = p.x - pos.x;
+          grabOffset.y = p.y - pos.y;
           ensureLoop();
         });
 
         card.addEventListener('pointermove', function (e) {
           if (!dragging || e.pointerId !== pointerId) return;
-          target.x = e.clientX - grabOffset.x;
-          target.y = e.clientY - grabOffset.y;
+          var p = toLocal(e.clientX, e.clientY);
+          target.x = p.x - grabOffset.x;
+          target.y = p.y - grabOffset.y;
         });
 
         function endDrag(e) {
@@ -630,6 +656,18 @@
     var modalLabel = document.getElementById('modalLabel');
     var closeBtn = document.getElementById('closeBtn');
 
+    document.querySelectorAll('.handle[data-url]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var url = btn.getAttribute('data-url');
+        modalLabel.textContent = btn.getAttribute('data-label');
+        modalQr.src = btn.getAttribute('data-qr');
+        modalLink.href = url;
+        modalLink.textContent = url.replace(/^https?:\/\//, '');
+        overlay.classList.remove('closing');
+        overlay.classList.add('open');
+      });
+    });
+
     function closeModal() {
       if (!overlay.classList.contains('open')) return;
       overlay.classList.add('closing');
@@ -646,61 +684,14 @@
       if (e.key === 'Escape') closeModal();
     });
 
-    // 各種リンク先 URL・肩書き・演出メッセージは WASM (assets/card.wasm) 側に持たせ、
-    // HTML/JS のソースを読んだだけでは分からないようにしている。
-    CardModule().then(function (Module) {
-      var getLinkUrl = Module.cwrap('get_link_url', 'string', ['number']);
-      var getLinkLabel = Module.cwrap('get_link_label', 'string', ['number']);
-      var getLinkName = Module.cwrap('get_link_name', 'string', ['number']);
-      var getQrAsset = Module.cwrap('get_qr_asset', 'string', ['number']);
-      var currentJobTitle = Module.cwrap('current_job_title', 'string', []);
-      var nextJobTitle = Module.cwrap('next_job_title', 'string', []);
-      var checkKonami = Module.cwrap('check_konami', 'number', ['number']);
-      var checkSecretWordRaw = Module.cwrap('check_secret_word', 'number', ['string']);
-      var msgContextMenu = Module.cwrap('msg_context_menu', 'string', []);
-      var msgCaught = Module.cwrap('msg_caught', 'string', []);
-      var msgSecretWord = Module.cwrap('msg_secret_word', 'string', []);
-      var msgParty = Module.cwrap('msg_party', 'string', []);
-      var msgFound = Module.cwrap('msg_found', 'string', []);
-      var msgTabAway = Module.cwrap('msg_tab_away', 'string', []);
-      var msgConsoleTitle = Module.cwrap('msg_console_title', 'string', []);
-      var msgConsoleBody = Module.cwrap('msg_console_body', 'string', []);
-      var msgConsoleHint = Module.cwrap('msg_console_hint', 'string', []);
-
+    (function () {
       var card = document.querySelector('.card');
       var jobTag = document.getElementById('jobTag');
       var eggDot = document.getElementById('eggDot');
-      var qrBlock = document.getElementById('qrBlock');
-      var qrImg = document.getElementById('qrImg');
-      var qrUrlLabel = document.getElementById('qrUrlLabel');
 
-      console.log('%c' + msgConsoleTitle() + ' ', 'font-size:14px;font-weight:bold;background:#1c1c1c;color:#fdfdfc;padding:4px 8px;border-radius:4px;');
-      console.log('%c' + msgConsoleBody(), 'color:#6b6b6b;');
-      console.log('%c' + msgConsoleHint(), 'color:#6b6b6b;');
-
-      // メインの QR (自ページへのリンク, idx=3)
-      qrBlock.href = getLinkUrl(3);
-      qrImg.src = getQrAsset(3);
-      qrUrlLabel.textContent = getLinkLabel(3);
-
-      // SNS ハンドル (X / LinkedIn / Facebook, idx=0..2)
-      document.querySelectorAll('.handle[data-idx]').forEach(function (btn) {
-        var idx = parseInt(btn.getAttribute('data-idx'), 10);
-        var labelEl = btn.querySelector('[data-idx-label]');
-        if (labelEl) labelEl.textContent = getLinkLabel(idx);
-
-        btn.addEventListener('click', function () {
-          var url = getLinkUrl(idx);
-          modalLabel.textContent = getLinkName(idx);
-          modalQr.src = getQrAsset(idx);
-          modalLink.href = url;
-          modalLink.textContent = url.replace(/^https?:\/\//, '');
-          overlay.classList.remove('closing');
-          overlay.classList.add('open');
-        });
-      });
-
-      if (jobTag) jobTag.textContent = currentJobTitle();
+      console.log('%c GOROman.card ', 'font-size:14px;font-weight:bold;background:#1c1c1c;color:#fdfdfc;padding:4px 8px;border-radius:4px;');
+      console.log('%c無職だけど元気です。ソースは自由に読んでね。', 'color:#6b6b6b;');
+      console.log('%cヒント: コナミコマンドか "gorogoro" と打ってみて。', 'color:#6b6b6b;');
 
       function toast(text, ms) {
         var el = document.createElement('div');
@@ -715,23 +706,26 @@
       }
 
       // 1. 無職タグをクリックすると肩書きがループする
+      var jobs = ['無職', 'エンジニア(自称)', '世界のGOROman', '休養中'];
+      var jobIdx = 0;
       if (jobTag) {
         jobTag.addEventListener('click', function (e) {
           e.stopPropagation();
-          jobTag.textContent = nextJobTitle();
+          jobIdx = (jobIdx + 1) % jobs.length;
+          jobTag.textContent = jobs[jobIdx];
         });
       }
 
       // 2. タブを離れると title が変わる
       var originalTitle = document.title;
       document.addEventListener('visibilitychange', function () {
-        document.title = document.hidden ? msgTabAway() : originalTitle;
+        document.title = document.hidden ? '👋 戻ってきて…' : originalTitle;
       });
 
       // 3. 右クリックにひとこと
       card.addEventListener('contextmenu', function (e) {
         e.preventDefault();
-        toast(msgContextMenu());
+        toast('コピーはできないよ🙊');
       });
 
       // 4. 長押しすると捕まる
@@ -741,7 +735,7 @@
         if (e.target.closest('button, a, .job-tag, .egg-dot')) return;
         pressMoved = false;
         pressTimer = setTimeout(function () {
-          if (!pressMoved) toast(msgCaught());
+          if (!pressMoved) toast('掴まえた! 🖐️');
         }, 1200);
       });
       card.addEventListener('pointermove', function () { pressMoved = true; });
@@ -759,10 +753,13 @@
         setTimeout(function () { plane.remove(); }, 1800);
       });
 
-      // 6. 合言葉 (WASM 側で判定) でカードがゴロゴロ震える
+      // 6. 合言葉 "gorogoro" でカードがゴロゴロ震える
+      var typedBuffer = '';
       window.addEventListener('keydown', function (e) {
         if (e.key.length !== 1) return;
-        if (checkSecretWordRaw(e.key)) {
+        typedBuffer = (typedBuffer + e.key).slice(-20).toLowerCase();
+        if (typedBuffer.indexOf('gorogoro') !== -1) {
+          typedBuffer = '';
           card.animate([
             { transform: 'rotate(0deg)' },
             { transform: 'rotate(-4deg)' },
@@ -771,13 +768,24 @@
             { transform: 'rotate(3deg)' },
             { transform: 'rotate(0deg)' }
           ], { duration: 400, easing: 'ease-in-out' });
-          toast(msgSecretWord());
+          toast('ゴロゴロ...🐾');
         }
       });
 
-      // 7. コナミコマンド (判定は WASM 側) でパーティーモード
+      // 7. コナミコマンドでパーティーモード
+      var KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+      var kIdx = 0;
       window.addEventListener('keydown', function (e) {
-        if (checkKonami(e.keyCode)) partyMode();
+        var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        if (key === KONAMI[kIdx]) {
+          kIdx++;
+          if (kIdx === KONAMI.length) {
+            kIdx = 0;
+            partyMode();
+          }
+        } else {
+          kIdx = (key === KONAMI[0]) ? 1 : 0;
+        }
       });
 
       function partyMode() {
@@ -787,17 +795,18 @@
           { transform: 'rotate(720deg) scale(1)' }
         ], { duration: 900, easing: 'ease-in-out' });
         confettiBurst();
-        toast(msgParty(), 2000);
+        toast('🎉 GOROman MODE 🎉', 2000);
       }
 
       function confettiBurst() {
         var rect = card.getBoundingClientRect();
+        var center = window.__cardToLocal(rect.left + rect.width / 2, rect.top + rect.height / 2);
         for (var i = 0; i < 24; i++) {
           (function () {
             var p = document.createElement('div');
             p.className = 'egg-confetti';
-            p.style.left = (rect.left + rect.width / 2) + 'px';
-            p.style.top = (rect.top + rect.height / 2) + 'px';
+            p.style.left = center.x + 'px';
+            p.style.top = center.y + 'px';
             var angle = Math.random() * Math.PI * 2;
             var dist = 120 + Math.random() * 160;
             p.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
@@ -832,11 +841,11 @@
         eggDot.addEventListener('click', function (e) {
           e.stopPropagation();
           document.body.classList.add('egg-invert');
-          toast(msgFound(), 1200);
+          toast('見つけた! 👀', 1200);
           setTimeout(function () { document.body.classList.remove('egg-invert'); }, 900);
         });
       }
-    });
+    })();
   </script>
 </body>
 </html>
