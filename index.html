@@ -97,19 +97,6 @@
       height: 100vw;
       transform: rotate(90deg) translateY(-100%);
     }
-    /* vw ベースの clamp() はスマホ (特に回転時) で小さくなりすぎるので固定値にする */
-    .content { gap: 24px; }
-    .info { gap: 10px; }
-    .name-en { font-size: 40px; }
-    .name-ja { font-size: 17px; margin-bottom: 18px; }
-    .links { gap: 14px; }
-    .handle { font-size: 21px; gap: 12px; }
-    .handle svg { width: 28px; height: 28px; border-radius: 7px; }
-    .icon-x, .icon-linkedin { padding: 4px; }
-    .qr-block { gap: 8px; }
-    .qr-block img { width: 200px; height: 200px; }
-    .qr-url { font-size: 14px; }
-    .tag { font-size: 14px; }
     .card {
       max-width: none;
       width: 100%;
@@ -455,6 +442,25 @@
   body.egg-invert {
     filter: invert(1);
     transition: filter 0.12s ease;
+  }
+
+  /* スマホ: vw ベースの clamp() は (特に回転時) 小さくなりすぎるので固定値で上書き。
+     基本ルールより後ろに置いて確実に勝たせる。
+     .content は space-between のままだと、回転後は画面の縦幅いっぱいに
+     info と QR が引き離されて中央が間延びするので center + 固定 gap に変える。 */
+  @media (max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse)) {
+    .content { justify-content: center; gap: 64px; }
+    .info { gap: 16px; }
+    .name-en { font-size: 54px; }
+    .name-ja { font-size: 22px; margin-bottom: 24px; }
+    .links { gap: 20px; }
+    .handle { font-size: 28px; gap: 16px; }
+    .handle svg { width: 38px; height: 38px; border-radius: 10px; }
+    .icon-x, .icon-linkedin { padding: 6px; }
+    .qr-block { gap: 14px; }
+    .qr-block img { width: 260px; height: 260px; }
+    .qr-url { font-size: 17px; }
+    .tag { font-size: 17px; }
   }
 </style>
 </head>
