@@ -25,7 +25,7 @@
     margin: 0;
   }
   body {
-    background: #ffffff;
+    background: #0a0a0a;
     color: var(--ink);
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -43,7 +43,7 @@
   .card {
     position: relative;
     width: 100%;
-    max-width: clamp(360px, 34vw, 620px);
+    max-width: clamp(470px, 44vw, 810px);
     aspect-ratio: 91 / 55;
     background: var(--paper);
     border: 1px solid var(--ink);
@@ -76,10 +76,9 @@
     cursor: grabbing;
   }
 
-  /* スマホ (縦持ち / 横持ち): 黒背景の上にカードを浮かせて画面いっぱい使う */
+  /* スマホ (縦持ち / 横持ち): 黒背景 (body で共通化済み) の上にカードを浮かせて画面いっぱい使う */
   @media (max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse)) {
     body {
-      background: #0a0a0a;
       padding: 0;
       align-items: center;
       justify-content: center;
