@@ -105,7 +105,7 @@
       border-radius: 0;
       border: none;
       box-shadow: none;
-      padding: 28px 26px;
+      padding: 56px 44px;
     }
   }
 
@@ -449,18 +449,19 @@
      .content は space-between のままだと、回転後は画面の縦幅いっぱいに
      info と QR が引き離されて中央が間延びするので center + 固定 gap に変える。 */
   @media (max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse)) {
-    .content { justify-content: center; gap: 64px; }
-    .info { gap: 16px; }
-    .name-en { font-size: 54px; }
-    .name-ja { font-size: 22px; margin-bottom: 24px; }
-    .links { gap: 20px; }
-    .handle { font-size: 28px; gap: 16px; }
-    .handle svg { width: 38px; height: 38px; border-radius: 10px; }
-    .icon-x, .icon-linkedin { padding: 6px; }
-    .qr-block { gap: 14px; }
-    .qr-block img { width: 260px; height: 260px; }
-    .qr-url { font-size: 17px; }
-    .tag { font-size: 17px; }
+    .content { justify-content: center; gap: 72px; }
+    .info { gap: 14px; }
+    .name-en { font-size: 40px; letter-spacing: 0.005em; }
+    .name-ja { font-size: 16px; margin-bottom: 22px; letter-spacing: 0.3em; }
+    .links { gap: 18px; }
+    .handle { font-size: 21px; gap: 14px; }
+    .handle svg { width: 30px; height: 30px; border-radius: 8px; }
+    .icon-x, .icon-linkedin { padding: 5px; }
+    .qr-block { gap: 12px; }
+    .qr-block img { width: 200px; height: 200px; }
+    .qr-url { font-size: 14px; }
+    .tag { font-size: 14px; letter-spacing: 0.12em; }
+    .footer-row { padding-top: 20px; }
   }
 </style>
 </head>
