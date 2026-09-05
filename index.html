@@ -76,11 +76,13 @@
     cursor: grabbing;
   }
 
-  /* スマホ (縦持ち / 横持ち): 画面いっぱいに名刺を表示 */
+  /* スマホ (縦持ち / 横持ち): 黒背景の上にカードを浮かせて画面いっぱい使う */
   @media (max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse)) {
     body {
+      background: #0a0a0a;
       padding: 0;
-      align-items: stretch;
+      align-items: center;
+      justify-content: center;
       position: fixed;
       top: 0;
       left: 0;
@@ -99,13 +101,20 @@
     }
     .card {
       max-width: none;
-      width: 100%;
-      height: 100%;
+      width: calc(100% - 28px);
+      height: calc(100% - 28px);
       aspect-ratio: auto;
-      border-radius: 0;
+      border-radius: 22px;
       border: none;
-      box-shadow: none;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 20px 45px -12px rgba(0, 0, 0, 0.55),
+        0 40px 80px -30px rgba(0, 0, 0, 0.45);
       padding: 56px 44px;
+    }
+    /* 内側の二重枠は full-bleed だと余白との間で浮いた線に見えるので消す */
+    .card::after {
+      display: none;
     }
   }
 
