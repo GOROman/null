@@ -35,9 +35,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: fixed;
+    inset: 0;
     padding: 24px;
     overflow: hidden;
     perspective: 1400px;
+    transform-origin: top left;
+    transform: rotate(0deg) translateY(0);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card {
@@ -61,15 +66,12 @@
     cursor: grab;
     touch-action: none;
     will-change: transform;
-  }
-
-  .card::after {
-    content: "";
-    position: absolute;
-    inset: 6px;
-    border: 1px solid var(--ink);
-    border-radius: 8px;
-    pointer-events: none;
+    /* PC ⇄ スマホの切替 (ウィンドウ幅が 640px をまたぐ) をシームレスにモーフィングさせる。
+       transform は物理演算のドラッグ/フライインで JS が直接書き換えるのでここには含めない */
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card.dragging {
@@ -80,16 +82,8 @@
   @media (max-width: 640px), ((max-height: 640px) and (orientation: landscape) and (pointer: coarse)) {
     body {
       padding: 0;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      top: 0;
-      left: 0;
       width: 100vw;
       height: 100dvh;
-      transform-origin: top left;
-      transform: rotate(0deg) translateY(0);
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     /* 縦持ち: body ごと 90 度回転して横長の名刺で画面いっぱい使う。
        クラスは JS が orientation を見て付け替える (横持ちとの切替は transition で滑らかに回る) */
@@ -104,16 +98,12 @@
       height: calc(100% - 28px);
       aspect-ratio: auto;
       border-radius: 22px;
-      border: none;
+      border-color: transparent;
       box-shadow:
         0 1px 2px rgba(0, 0, 0, 0.3),
         0 20px 45px -12px rgba(0, 0, 0, 0.55),
         0 40px 80px -30px rgba(0, 0, 0, 0.45);
       padding: 56px 44px;
-    }
-    /* 内側の二重枠は full-bleed だと余白との間で浮いた線に見えるので消す */
-    .card::after {
-      display: none;
     }
   }
 
@@ -534,6 +524,12 @@
     (function () {
       var card = document.querySelector('.card');
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // PC ⇄ スマホでウィンドウ幅が 640px をまたいだときの形状モーフィング用。
+      // transform は下のドラッグ物理演算が毎フレーム直接書き換えるので、そこだけ 0s にして残す。
+      var SIZE_TRANSITION = 'width 0.5s cubic-bezier(0.4,0,0.2,1), height 0.5s cubic-bezier(0.4,0,0.2,1), ' +
+        'max-width 0.5s cubic-bezier(0.4,0,0.2,1), border-radius 0.5s cubic-bezier(0.4,0,0.2,1), ' +
+        'border-color 0.5s cubic-bezier(0.4,0,0.2,1), box-shadow 0.5s cubic-bezier(0.4,0,0.2,1), ' +
+        'padding 0.5s cubic-bezier(0.4,0,0.2,1)';
 
       // 縦持ち回転時は body が 90 度回っているので、ポインタ座標を body 座標系に変換する
       function toLocal(x, y) {
@@ -592,7 +588,7 @@
       }
 
       function enableDrag() {
-        setTransition('none');
+        setTransition('transform 0s linear, ' + SIZE_TRANSITION);
 
         var STIFFNESS = 220;
         var DAMPING = 16;
